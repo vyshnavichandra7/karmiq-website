@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang }}">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karmiq | Order. Connect. Work. Grow.</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <!-- Smooth font loading -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+
+<body class="dark-mode">
+  <div class="page">
+    {% if messages %}
+    <div class="messages-container" style="position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:10px;">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}" style="background:var(--surface); border:1px solid var(--border); padding:12px 20px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    <script>
+      setTimeout(() => { document.querySelectorAll('.messages-container .alert').forEach(a => a.style.display = 'none'); }, 5000);
+    </script>
+    {% endif %}
+    <nav class="nav">
+      <div class="nav-inner">
+        <a href="/home/" class="nav-logo" style="display:flex; align-items:center; gap:12px; text-decoration:none;">
+          <img src="{% static 'images/logo.png' %}" alt="Karmiq Logo" style="height:44px; width:auto; border-radius:8px; flex-shrink:0;">
+          <div style="display:flex; flex-direction:column; justify-content:center;">
+            <div style="font-size:22px; font-weight:800; color:var(--amber); line-height:1; letter-spacing:-0.5px;">Karmiq</div>
+            <div style="font-size:9px; color:var(--t3); font-weight:700; letter-spacing:1.2px; text-transform:uppercase; margin-top:4px; white-space:nowrap;">Order · Connect · Work · Grow</div>
+          </div>
+        </a>
+
+        <div class="nav-links">
+          {% if request.session.user_id %}
+          {% if request.session.role == "worker" %}
+          <a href="/jobs/" class="nav-link">🔍 {{ T.nav_jobs }}</a>
+          <a href="/map/" class="nav-link">📍 {{ T.nav_map }}</a>
+          {% else %}
+          <a href="/post-job/" class="nav-link">➕ {{ T.nav_post_job }}</a>
+          <a href="/workers/" class="nav-link">👷 Workers</a>
+          {% endif %}
+          <a href="/dashboard/" class="nav-link">📊 {{ T.nav_dashboard }}</a>
+
+          {% if request.session.role == "worker" %}
+          <a href="/notifications/" class="nav-link" style="position:relative; padding:8px; display:flex; align-items:center; justify-content:center;">
+            🔔
+            {% if nav_hired_count %}
+              <span style="position:absolute; top:2px; right:2px; background:var(--amber); color:var(--bg); font-size:9px; font-weight:900; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; line-height:1;">{{ nav_hired_count }}</span>
+            {% endif %}
+          </a>
+          {% endif %}
+
+          <a href="/logout/" class="nav-link nav-cta" style="margin-left:8px;">{{ T.nav_logout }}</a>
+          {% else %}
+          <a href="/login/" class="nav-link">{{ T.nav_login }}</a>
+          <a href="/register/" class="nav-link nav-cta">{{ T.nav_register }}</a>
+          {% endif %}
+
+          <div style="display:flex; gap:6px; margin-left:12px;">
+            <a href="?lang=en" class="lang-btn {% if current_lang == 'en' %}active{% endif %}">EN</a>
+            <a href="?lang=hi" class="lang-btn {% if current_lang == 'hi' %}active{% endif %}">हि</a>
+            <a href="?lang=te" class="lang-btn {% if current_lang == 'te' %}active{% endif %}">తె</a>
+          </div>
+
+          <button id="theme-toggle" class="btn btn-ghost"
+            style="padding:6px 10px; border-radius:100px; margin-left:8px;">☀️</button>
+        </div>
+      </div>
+    </nav>
+
+    <div style="flex:1;">
+      {% block content %}{% endblock %}
+    </div>
+
+  </div>
+
+  <script>
+    // Theme Toggle
+    const toggleBtn = document.getElementById('theme-toggle');
+    const body = document.body;
+    if (localStorage.getItem('theme') === 'light') {
+      body.classList.add('light-mode');
+      toggleBtn.textContent = '🌙';
+    }
+    toggleBtn.addEventListener('click', () => {
+      body.classList.toggle('light-mode');
+      const isLight = body.classList.contains('light-mode');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      toggleBtn.textContent = isLight ? '🌙' : '☀️';
+    });
+
+    // ✨ Global Mouse-Tracking Glow Effect for Cards
+    document.addEventListener('mousemove', (e) => {
+      document.querySelectorAll('.job-card, .card, .stat, .applicant-card, .form-card').forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+      });
+    });
+  </script>
+
+</body>
+
+</html>

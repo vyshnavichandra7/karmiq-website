@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="main">
+  <div class="ph">
+    <h1>{{ T.post_job_title }}</h1>
+    <p>{{ T.post_job_subtitle }}</p>
+  </div>
+
+  <div class="form-card" style="max-width:520px">
+    <form method="POST" style="display:flex;flex-direction:column;gap:18px">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label class="form-label">{{ T.job_title_placeholder }}</label>
+        <select name="title" class="form-select" required>
+          <option value="">Select Job Type</option>
+          <option value="Mason">Mason</option>
+          <option value="Carpenter">Carpenter</option>
+          <option value="Plumber">Plumber</option>
+          <option value="Electrician">Electrician</option>
+          <option value="Painter">Painter</option>
+          <option value="Helper">General Helper</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">{{ T.salary_label }} (₹)</label>
+        <input type="number" name="salary" class="form-input" placeholder="{{ T.salary_placeholder }}" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Work Timing</label>
+        <select name="timing" class="form-select" required>
+          <option value="">Select Timing</option>
+          <option value="6 AM - 12 PM">🌅 6 AM – 12 PM (Morning Shift)</option>
+          <option value="7 AM - 3 PM">☀️ 7 AM – 3 PM (Day Shift)</option>
+          <option value="9 AM - 5 PM">🕘 9 AM – 5 PM (Office Hours)</option>
+          <option value="10 AM - 6 PM">🕙 10 AM – 6 PM</option>
+          <option value="12 PM - 8 PM">🌤️ 12 PM – 8 PM (Afternoon Shift)</option>
+          <option value="2 PM - 10 PM">🌙 2 PM – 10 PM (Evening Shift)</option>
+          <option value="Full Day">📅 Full Day (Flexible)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Job Date</label>
+        <input type="date" name="job_date" class="form-input" required min="{% now 'Y-m-d' %}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">{{ T.location_label }}</label>
+        <input type="hidden" name="location" id="location-input" required>
+        <button type="button" id="location-btn" class="form-input" style="text-align:left; cursor:pointer;">{{ T.select_location }}</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">{{ T.workers_needed }}</label>
+        <input type="number" name="max_workers" class="form-input" placeholder="{{ T.workers_needed_placeholder }}" min="1" required>
+      </div>
+
+      <label class="form-checkbox">
+        <input type="checkbox" name="is_urgent">
+        <span>🔥 {{ T.urgent_label }}</span>
+      </label>
+
+      <button type="submit" class="btn btn-primary btn-full">{{ T.post_btn }}</button>
+    </form>
+  </div>
+</div>
+
+<!-- Location Modal -->
+<div id="location-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+  <div class="form-card" style="width:100%; max-width:400px; padding:24px; position:relative;">
+    <button id="close-modal" style="position:absolute; top:16px; right:16px; background:none; border:none; color:var(--t1); font-size:24px; cursor:pointer;">&times;</button>
+    <h2 style="font-family:var(--fd); margin-bottom:16px; color:var(--t1);">Select Location</h2>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <button type="button" class="btn btn-ghost loc-option" data-loc="Kukatpally" style="justify-content:flex-start">Kukatpally</button>
+      <button type="button" class="btn btn-ghost loc-option" data-loc="Ameerpet" style="justify-content:flex-start">Ameerpet</button>
+      <button type="button" class="btn btn-ghost loc-option" data-loc="Gachibowli" style="justify-content:flex-start">Gachibowli</button>
+      <button type="button" class="btn btn-ghost loc-option" data-loc="Banjara Hills" style="justify-content:flex-start">Banjara Hills</button>
+      <button type="button" class="btn btn-ghost loc-option" data-loc="Secunderabad" style="justify-content:flex-start">Secunderabad</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const locBtn = document.getElementById('location-btn');
+  const locInput = document.getElementById('location-input');
+  const modal = document.getElementById('location-modal');
+  const closeModal = document.getElementById('close-modal');
+  const locOptions = document.querySelectorAll('.loc-option');
+
+  locBtn.addEventListener('click', () => {
+    modal.style.display = 'flex';
+  });
+
+  closeModal.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.style.display = 'none';
+  });
+
+  locOptions.forEach(opt => {
+    opt.addEventListener('click', (e) => {
+      const loc = e.target.getAttribute('data-loc');
+      locInput.value = loc;
+      locBtn.textContent = loc;
+      modal.style.display = 'none';
+    });
+  });
+</script>
+
+{% endblock %}

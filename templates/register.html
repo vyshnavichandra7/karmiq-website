@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karmiq — {{ T.register_title }}</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<div class="auth-page">
+
+  <div style="position:fixed;top:16px;right:20px;display:flex;gap:6px;z-index:10">
+    <a href="?lang=en" class="lang-btn {% if current_lang == 'en' %}active{% endif %}">EN</a>
+    <a href="?lang=hi" class="lang-btn {% if current_lang == 'hi' %}active{% endif %}">हि</a>
+    <a href="?lang=te" class="lang-btn {% if current_lang == 'te' %}active{% endif %}">తె</a>
+    <button id="theme-toggle" class="btn btn-ghost btn-sm" style="padding:4px 8px; font-size:16px;">☀️</button>
+  </div>
+
+  <div class="auth-logo" style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+    <img src="{% static 'images/logo.png' %}" alt="Karmiq Logo" style="height:64px; width:auto; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+    Karmiq
+  </div>
+  <div class="auth-tagline">{{ T.nav_tagline }}</div>
+
+  <div class="form-card">
+    <div>
+      <h1 style="font-family:var(--fd);font-size:24px;font-weight:800;color:var(--t1)">{{ T.register_title }}</h1>
+      <p style="color:var(--t2);font-size:14px;margin-top:4px">{{ T.register_subtitle }}</p>
+    </div>
+
+    <form method="POST" style="display:flex;flex-direction:column;gap:16px" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">{{ T.name_placeholder }}</label>
+        <input type="text" name="name" class="form-input" placeholder="{{ T.name_placeholder }}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ T.password_placeholder }}</label>
+        <input type="password" name="password" class="form-input" placeholder="{{ T.password_placeholder }}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Profile Image (Optional)</label>
+        <input type="file" name="profile_image" class="form-input" accept="image/*" style="padding:10px;">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bio (Optional)</label>
+        <textarea name="bio" class="form-input" placeholder="Tell us a little bit about yourself..." rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ T.select_role }}</label>
+        <select name="role" class="form-select">
+          <option value="worker">{{ T.role_worker }}</option>
+          <option value="contractor">{{ T.role_contractor }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ T.select_language }}</label>
+        <select name="language" class="form-select">
+          <option value="en">{{ T.lang_en }}</option>
+          <option value="hi">{{ T.lang_hi }}</option>
+          <option value="te">{{ T.lang_te }}</option>
+        </select>
+      </div>
+      <div class="form-group" id="skills-group" style="display:none;">
+        <label class="form-label">Skills (Worker Only)</label>
+        <select name="skills" class="form-select">
+          <option value="">Select Primary Skill</option>
+          <option value="Mason">Mason</option>
+          <option value="Carpenter">Carpenter</option>
+          <option value="Plumber">Plumber</option>
+          <option value="Electrician">Electrician</option>
+          <option value="Painter">Painter</option>
+          <option value="Helper">General Helper</option>
+        </select>
+      </div>
+      <div class="form-group" id="wage-group" style="display:none;">
+        <label class="form-label">Expected Daily Wage (₹)</label>
+        <input type="number" name="wage" class="form-input" placeholder="e.g. 800" min="1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ T.location_label }}</label>
+        <input type="hidden" name="location" id="location-input" required>
+        <button type="button" id="location-btn" class="form-input" style="text-align:left; cursor:pointer;">{{ T.location_placeholder }}</button>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" style="margin-top:4px">{{ T.register_btn }}</button>
+    </form>
+  </div>
+
+  <div class="auth-footer">
+    {{ T.have_account }} <a href="/login/">{{ T.login_link }}</a>
+  </div>
+</div>
+
+<!-- Location Modal -->
+<div id="location-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+  <div class="form-card" style="width:100%; max-width:400px; padding:24px; position:relative;">
+    <button id="close-modal" style="position:absolute; top:16px; right:16px; background:none; border:none; color:var(--t1); font-size:24px; cursor:pointer;">&times;</button>
+    <h2 style="font-family:var(--fd); margin-bottom:16px; color:var(--t1);">Select Location</h2>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <button type="button" class="btn btn-ghost loc-option" data-loc="Kukatpally" style="justify-content:flex-start">Kukatpally</button>
+      <button type="button" class="btn btn-ghost loc-option" data-loc="Ameerpet" style="justify-content:flex-start">Ameerpet</button>
+      <button type="button" class="btn btn-ghost loc-option" data-loc="Gachibowli" style="justify-content:flex-start">Gachibowli</button>
+      <button type="button" class="btn btn-ghost loc-option" data-loc="Banjara Hills" style="justify-content:flex-start">Banjara Hills</button>
+      <button type="button" class="btn btn-ghost loc-option" data-loc="Secunderabad" style="justify-content:flex-start">Secunderabad</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const toggleBtn = document.getElementById('theme-toggle');
+  const body = document.body;
+  if (localStorage.getItem('theme') === 'light') {
+    body.classList.add('light-mode');
+    toggleBtn.textContent = '🌙';
+  }
+  toggleBtn.addEventListener('click', () => {
+    body.classList.toggle('light-mode');
+    if (body.classList.contains('light-mode')) {
+      localStorage.setItem('theme', 'light');
+      toggleBtn.textContent = '🌙';
+    } else {
+      localStorage.setItem('theme', 'dark');
+      toggleBtn.textContent = '☀️';
+    }
+  });
+
+  // Role -> Skills visibility
+  const roleSelect = document.querySelector('select[name="role"]');
+  const skillsGroup = document.getElementById('skills-group');
+  const wageGroup = document.getElementById('wage-group');
+  roleSelect.addEventListener('change', (e) => {
+    if (e.target.value === 'worker') {
+      skillsGroup.style.display = 'flex';
+      wageGroup.style.display = 'flex';
+    } else {
+      skillsGroup.style.display = 'none';
+      wageGroup.style.display = 'none';
+    }
+  });
+  // init
+  if (roleSelect.value === 'worker') {
+    skillsGroup.style.display = 'flex';
+    wageGroup.style.display = 'flex';
+  }
+
+  // Location Modal
+  const locBtn = document.getElementById('location-btn');
+  const locInput = document.getElementById('location-input');
+  const modal = document.getElementById('location-modal');
+  const closeModal = document.getElementById('close-modal');
+  const locOptions = document.querySelectorAll('.loc-option');
+
+  locBtn.addEventListener('click', () => {
+    modal.style.display = 'flex';
+  });
+
+  closeModal.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.style.display = 'none';
+  });
+
+  locOptions.forEach(opt => {
+    opt.addEventListener('click', (e) => {
+      const loc = e.target.getAttribute('data-loc');
+      locInput.value = loc;
+      locBtn.textContent = loc;
+      modal.style.display = 'none';
+    });
+  });
+</script>
+</body>
+</html>

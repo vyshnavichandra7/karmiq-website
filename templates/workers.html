@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="main">
+  <div class="ph">
+    <h1>🔍 Browse Workers</h1>
+    <p>Find skilled workers for your construction site.</p>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filter-bar" style="margin-bottom:24px;">
+    <form method="GET" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+      <select name="skill" class="form-select" style="width:auto; min-width:160px;" onchange="this.form.submit()">
+        <option value="">All Skills</option>
+        <option value="Mason"       {% if skill_filter == "Mason" %}selected{% endif %}>🧱 Mason</option>
+        <option value="Carpenter"   {% if skill_filter == "Carpenter" %}selected{% endif %}>🪚 Carpenter</option>
+        <option value="Plumber"     {% if skill_filter == "Plumber" %}selected{% endif %}>🚰 Plumber</option>
+        <option value="Electrician" {% if skill_filter == "Electrician" %}selected{% endif %}>⚡ Electrician</option>
+        <option value="Painter"     {% if skill_filter == "Painter" %}selected{% endif %}>🖌️ Painter</option>
+        <option value="Helper"      {% if skill_filter == "Helper" %}selected{% endif %}>👷 General Helper</option>
+      </select>
+      <select name="location" class="form-select" style="width:auto; min-width:160px;" onchange="this.form.submit()">
+        <option value="">All Locations</option>
+        <option value="Kukatpally"   {% if location_filter == "Kukatpally" %}selected{% endif %}>Kukatpally</option>
+        <option value="Ameerpet"     {% if location_filter == "Ameerpet" %}selected{% endif %}>Ameerpet</option>
+        <option value="Gachibowli"   {% if location_filter == "Gachibowli" %}selected{% endif %}>Gachibowli</option>
+        <option value="Banjara Hills" {% if location_filter == "Banjara Hills" %}selected{% endif %}>Banjara Hills</option>
+        <option value="Secunderabad" {% if location_filter == "Secunderabad" %}selected{% endif %}>Secunderabad</option>
+      </select>
+      {% if skill_filter or location_filter %}
+        <a href="/workers/" class="btn btn-ghost btn-sm">✖ Clear</a>
+      {% endif %}
+      <span style="font-size:13px; color:var(--t2); margin-left:auto;">{{ workers|length }} worker(s) found</span>
+    </form>
+  </div>
+
+  <!-- WORKER CARDS -->
+  <div class="card-grid" style="gap:14px;">
+    {% for worker in workers %}
+      <div class="applicant-card" style="flex-direction:row; align-items:center; gap:16px; flex-wrap:wrap;">
+
+        <!-- Avatar -->
+        <div style="width:56px; height:56px; border-radius:50%; overflow:hidden; background:var(--amber-glo); border:2px solid rgba(232,168,58,.3); display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">
+          {% if worker.profile_image %}
+            <img src="{{ worker.profile_image.url }}" style="width:100%; height:100%; object-fit:cover;">
+          {% else %}
+            👷
+          {% endif %}
+        </div>
+
+        <!-- Info -->
+        <div style="flex:1; min-width:160px;">
+          <div style="font-family:var(--fd); font-size:15px; font-weight:700; color:var(--t1);">{{ worker.name }}</div>
+          <div style="font-size:12.5px; color:var(--t2); margin-top:3px; display:flex; flex-wrap:wrap; gap:10px;">
+            {% if worker.skills %}
+              <span>
+                {% if worker.skills == "Mason" %}🧱{% elif worker.skills == "Carpenter" %}🪚{% elif worker.skills == "Plumber" %}🚰{% elif worker.skills == "Electrician" %}⚡{% elif worker.skills == "Painter" %}🖌️{% else %}👷{% endif %}
+                {{ worker.skills }}
+              </span>
+            {% endif %}
+            {% if worker.location %}<span>📍 {{ worker.location }}</span>{% endif %}
+            {% if worker.wage %}<span>💰 ₹{{ worker.wage }}/day</span>{% endif %}
+          </div>
+          {% if worker.bio %}
+            <div style="font-size:12px; color:var(--t2); margin-top:5px; font-style:italic; line-height:1.4;">{{ worker.bio|truncatechars:80 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex; flex-direction:column; gap:8px; flex-shrink:0;">
+          <a href="/profile/{{ worker.id }}/" class="btn btn-ghost btn-sm">👤 View Profile</a>
+          <a href="/chat/{{ worker.id }}/" class="btn btn-primary btn-sm">💬 Message</a>
+        </div>
+
+      </div>
+    {% empty %}
+      <div class="empty">
+        <div class="empty-icon">👷</div>
+        <p>No workers found matching your filters.</p>
+        <a href="/workers/" class="btn btn-ghost" style="margin-top:8px;">View All Workers</a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

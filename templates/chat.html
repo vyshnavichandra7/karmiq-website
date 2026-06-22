@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="main" style="padding-top:20px;padding-bottom:0">
+  <div class="chat-wrap">
+
+    <div class="chat-header">
+      <div class="chat-avatar">{{ receiver.name|first|upper }}</div>
+      <div>
+        <div class="chat-name">{{ receiver.name }}</div>
+        <div class="chat-sub">{{ T.chat_title }}</div>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chat-msgs">
+      {% for msg in messages %}
+        <div class="msg {% if msg.sender.id == sender_id %}msg-sent{% else %}msg-recv{% endif %}">
+          {{ msg.text }}
+        </div>
+      {% empty %}
+        <div class="no-msgs">{{ T.no_messages }}</div>
+      {% endfor %}
+    </div>
+
+    <form method="POST" class="chat-input-row">
+      {% csrf_token %}
+      <input type="text" name="text" class="chat-input"
+             placeholder="{{ T.message_placeholder }}" autocomplete="off" required>
+      <button type="submit" class="chat-send">{{ T.send_btn }}</button>
+    </form>
+
+  </div>
+</div>
+
+<script>
+  // Auto-scroll to bottom
+  var msgs = document.getElementById('chat-msgs');
+  if (msgs) msgs.scrollTop = msgs.scrollHeight;
+</script>
+
+{% endblock %}

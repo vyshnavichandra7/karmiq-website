@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="main">
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- HIRE NOTIFICATIONS -->
+  {% if user.role == "worker" %}
+    <div id="hired-data">
+    {% for app in applications %}
+      {% if app.status == "hired" %}
+        <div class="alert alert-success hired-job" data-title="{{ app.job.title }}" style="margin-bottom:16px; background:var(--amber-glo); border:1px solid var(--amber); color:var(--amber); padding:16px; border-radius:var(--r-md); font-weight:600;">
+          🎉 {{ T.hired_congrats }} <strong>{{ app.job.title }}</strong>
+        </div>
+      {% endif %}
+    {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- CENTERED PREMIUM HERO -->
+  <div class="home-hero" style="text-align:center; padding:60px 20px;">
+    <h1 style="font-size:32px;">{{ T.welcome }} <span class="accent">{{ user.name }}</span></h1>
+    <p style="font-size:16px; color:var(--t2); margin-top:8px;">
+      {{ T.role_label }}: <strong>{% if user.role == "worker" %}{{ T.worker }}{% else %}{{ T.contractor }}{% endif %}</strong>
+    </p>
+
+    <div style="display:flex; justify-content:center; gap:16px; margin-top:32px; flex-wrap:wrap;">
+      {% if user.role == "worker" %}
+        <a href="/jobs/" class="btn btn-primary" style="min-width:180px;">🔍 {{ T.view_jobs }}</a>
+        <a href="/map/"  class="btn btn-ghost" style="min-width:180px;">📍 {{ T.view_map }}</a>
+      {% else %}
+        <a href="/post-job/" class="btn btn-primary" style="min-width:180px;">➕ {{ T.post_job }}</a>
+        <a href="/dashboard/" class="btn btn-ghost" style="min-width:180px;">📊 {{ T.view_dashboard }}</a>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Show popup if there are any hired jobs
+  const hiredJobsElements = document.querySelectorAll('.hired-job');
+  if (hiredJobsElements.length > 0) {
+    let jobTitles = [];
+    hiredJobsElements.forEach(el => jobTitles.push('<b>' + el.getAttribute('data-title') + '</b>'));
+    
+    Swal.fire({
+      title: 'Congratulations!',
+      html: '<div style="color:var(--t1)">{{ T.hired_congrats }}<br><br>' + jobTitles.join('<br>') + '</div>',
+      icon: 'success',
+      background: 'var(--surface)',
+      color: 'var(--t1)',
+      confirmButtonColor: '#e8a83a',
+      confirmButtonText: 'Awesome!'
+    });
+  }
+</script>
+
+{% endblock %}

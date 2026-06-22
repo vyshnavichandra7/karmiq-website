@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karmiq — {{ T.login_title }}</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<div class="auth-page">
+
+  <!-- Lang switcher on auth pages -->
+  <div style="position:fixed;top:16px;right:20px;display:flex;gap:6px;z-index:10">
+    <a href="?lang=en" class="lang-btn {% if current_lang == 'en' %}active{% endif %}">EN</a>
+    <a href="?lang=hi" class="lang-btn {% if current_lang == 'hi' %}active{% endif %}">हि</a>
+    <a href="?lang=te" class="lang-btn {% if current_lang == 'te' %}active{% endif %}">తె</a>
+    <button id="theme-toggle" class="btn btn-ghost btn-sm" style="padding:4px 8px; font-size:16px;">☀️</button>
+  </div>
+
+  <div class="auth-logo" style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+    <img src="{% static 'images/logo.png' %}" alt="Karmiq Logo" style="height:64px; width:auto; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+    Karmiq
+  </div>
+  <div class="auth-tagline">{{ T.nav_tagline }}</div>
+
+  <div class="form-card">
+    <div>
+      <h1 style="font-family:var(--fd);font-size:24px;font-weight:800;color:var(--t1)">{{ T.login_title }}</h1>
+      <p style="color:var(--t2);font-size:14px;margin-top:4px">{{ T.login_subtitle }}</p>
+    </div>
+
+    <form method="POST" style="display:flex;flex-direction:column;gap:16px">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">{{ T.name_placeholder }}</label>
+        <input type="text" name="name" class="form-input" placeholder="{{ T.name_placeholder }}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ T.password_placeholder }}</label>
+        <input type="password" name="password" class="form-input" placeholder="{{ T.password_placeholder }}" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" style="margin-top:4px">{{ T.login_btn }}</button>
+    </form>
+  </div>
+
+  <div class="auth-footer">
+    {{ T.no_account }} <a href="/register/">{{ T.register_link }}</a>
+  </div>
+
+</div>
+
+<script>
+  const toggleBtn = document.getElementById('theme-toggle');
+  const body = document.body;
+  if (localStorage.getItem('theme') === 'light') {
+    body.classList.add('light-mode');
+    toggleBtn.textContent = '🌙';
+  }
+  toggleBtn.addEventListener('click', () => {
+    body.classList.toggle('light-mode');
+    if (body.classList.contains('light-mode')) {
+      localStorage.setItem('theme', 'light');
+      toggleBtn.textContent = '🌙';
+    } else {
+      localStorage.setItem('theme', 'dark');
+      toggleBtn.textContent = '☀️';
+    }
+  });
+</script>
+</body>
+</html>

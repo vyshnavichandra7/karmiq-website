@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="main">
+  <div class="ph">
+    <h1>{{ T.applicants_title }}</h1>
+    <p>{{ T.applicants_subtitle }}</p>
+  </div>
+
+  <div class="card-grid" style="gap:14px">
+    {% for app in applications %}
+      <div class="applicant-card">
+
+        <div class="applicant-head">
+          <div class="applicant-avatar" style="overflow:hidden; padding:0;">
+            {% if app.worker.profile_image %}
+              <img src="{{ app.worker.profile_image.url }}" alt="{{ app.worker.name }}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+            {% else %}
+              <span style="font-size:20px;">{{ app.worker.name|first|upper }}</span>
+            {% endif %}
+          </div>
+          <div class="applicant-info">
+            <h3>{{ app.worker.name }}</h3>
+            <p>{{ app.worker.skills|default:"General Worker" }} &nbsp;·&nbsp; 📍 {{ app.worker.location }}</p>
+          </div>
+          {% if app.status == "hired" %}
+            <span class="badge badge-hired" style="margin-left:auto">{{ T.hired_badge }}</span>
+          {% endif %}
+        </div>
+
+        {% if app.worker.bio %}
+        <div style="font-size:13px; color:var(--t2); line-height:1.5; background:var(--bg2); border:1px solid var(--border); padding:10px 12px; border-radius:8px;">
+          {{ app.worker.bio }}
+        </div>
+        {% endif %}
+
+        <div style="font-size:13px;color:var(--t2)">
+          {{ T.status_label }}: <strong style="color:var(--t1)">{{ app.status }}</strong>
+        </div>
+
+        <!-- Rating display -->
+        {% if app.status == "hired" %}
+          {% if app.rating %}
+            <div class="alert alert-warn" style="padding:10px 14px; flex-direction:column; align-items:flex-start;">
+              <div>
+                <span class="stars">{% for i in "12345" %}{% if forloop.counter <= app.rating %}★{% else %}☆{% endif %}{% endfor %}</span>
+                &nbsp;{{ app.rating }}/5
+              </div>
+              {% if app.review %}
+                <div style="margin-top:6px; font-size:13px; color:var(--t2); font-style:italic;">"{{ app.review }}"</div>
+              {% endif %}
+            </div>
+          {% else %}
+            <form method="POST" action="/rate/{{ app.id }}/" style="display:flex;gap:8px;align-items:center">
+              {% csrf_token %}
+              <select name="rating" class="form-select" style="max-width:140px">
+                <option value="1">⭐ 1</option>
+                <option value="2">⭐⭐ 2</option>
+                <option value="3">⭐⭐⭐ 3</option>
+                <option value="4">⭐⭐⭐⭐ 4</option>
+                <option value="5">⭐⭐⭐⭐⭐ 5</option>
+              </select>
+              <input type="text" name="review" class="form-input" placeholder="Write a review..." style="max-width:200px;">
+              <button type="submit" class="btn btn-ghost btn-sm">{{ T.rate_btn }}</button>
+            </form>
+          {% endif %}
+        {% endif %}
+
+        <div class="job-actions">
+          <a href="/profile/{{ app.worker.id }}/" class="btn btn-ghost btn-sm">👤 View Profile</a>
+          {% if app.status != "hired" %}
+            <button type="button" class="btn btn-green btn-sm hire-btn" data-url="/hire/{{ app.id }}/" data-name="{{ app.worker.name }}">✅ {{ T.hire_btn }}</button>
+          {% endif %}
+          <a href="/chat/{{ app.worker.id }}/" class="btn btn-ghost btn-sm">💬 {{ T.message_btn }}</a>
+        </div>
+
+      </div>
+    {% empty %}
+      <div class="empty">
+        <div class="empty-icon">👥</div>
+        <p>{{ T.no_applicants }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.hire-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const url = this.getAttribute('data-url');
+    const name = this.getAttribute('data-name');
+
+    Swal.fire({
+      title: 'Hire ' + name + '?',
+      text: "Are you sure you want to hire this worker?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#4caf6e',
+      cancelButtonColor: '#e05252',
+      confirmButtonText: 'Yes, hire!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Hired!',
+          text: name + ' has been hired.',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        }).then(() => {
+          window.location.href = url;
+        });
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

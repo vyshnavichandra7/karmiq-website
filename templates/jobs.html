@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="main">
+  <div class="ph" style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;">
+    <div>
+      <h1>{{ T.jobs_title }}</h1>
+      <p>{{ T.jobs_subtitle }}</p>
+    </div>
+    <div style="flex:1; max-width:600px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <select id="filter-location" class="form-select" style="width:auto; min-width:140px; padding:8px;">
+        <option value="">All Locations</option>
+        <option value="Kukatpally">Kukatpally</option>
+        <option value="Ameerpet">Ameerpet</option>
+        <option value="Gachibowli">Gachibowli</option>
+        <option value="Banjara Hills">Banjara Hills</option>
+        <option value="Secunderabad">Secunderabad</option>
+      </select>
+      <select id="filter-title" class="form-select" style="width:auto; min-width:140px; padding:8px;">
+        <option value="">All Jobs</option>
+        <option value="Mason">Mason</option>
+        <option value="Carpenter">Carpenter</option>
+        <option value="Plumber">Plumber</option>
+        <option value="Electrician">Electrician</option>
+        <option value="Painter">Painter</option>
+        <option value="Helper">General Helper</option>
+      </select>
+      <select id="sort-salary" class="form-select" style="width:auto; min-width:140px; padding:8px;">
+        <option value="default">Sort by Salary</option>
+        <option value="high">High to Low</option>
+        <option value="low">Low to High</option>
+      </select>
+      <label class="form-checkbox" style="white-space:nowrap; margin-left:auto;">
+        <input type="checkbox" id="filter-urgent">
+        <span style="font-size:12.5px; font-weight:700;">🔥 Urgent Only</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="card-grid" style="gap:14px" id="job-list">
+    {% for job in jobs %}
+    <div class="job-card {% if job.is_urgent %}urgent{% endif %}" data-salary="{{ job.salary }}">
+
+      <div class="job-head">
+        <div class="job-title" style="display:flex; align-items:center; gap:8px;">
+          {% if job.title == "Mason" %}🧱
+          {% elif job.title == "Carpenter" %}🪚
+          {% elif job.title == "Plumber" %}🚰
+          {% elif job.title == "Electrician" %}⚡
+          {% elif job.title == "Painter" %}🖌️
+          {% else %}👷{% endif %}
+          {{ job.title }}
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap">
+          {% if job.is_urgent %}
+          <span class="badge badge-urgent">🔥 {{ T.urgent_badge }}</span>
+          {% endif %}
+          {% if job.application_set.count >= job.max_workers %}
+          <span class="badge badge-filled">{{ T.filled_msg }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="job-meta" style="flex-direction:column; gap:8px; align-items:flex-start;">
+        <div style="display:flex; flex-wrap:wrap; gap:12px;">
+          <span>📍 {{ job.location }}</span>
+          <span>💰 ₹{{ job.salary }}</span>
+          <span>👷 {{ job.application_set.count }}/{{ job.max_workers }} {{ T.applied_count }}</span>
+          {% if job.timing %}<span>🕒 {{ job.timing }}</span>{% endif %}
+          {% if job.job_date %}<span>📅 {{ job.job_date|date:"d M Y" }}</span>{% endif %}
+        </div>
+        <div style="font-size:11.5px; color:var(--t2); font-style:italic;">
+          Posted {{ job.created_at|timesince }} ago
+        </div>
+        <!-- Contractor info -->
+        <div style="display:flex; align-items:center; gap:10px; margin-top:8px; padding-top:12px; border-top:1px solid var(--border);">
+          <div
+            style="width:32px; height:32px; border-radius:50%; overflow:hidden; background:var(--amber-glo); display:flex; align-items:center; justify-content:center; font-size:14px; border:1px solid rgba(232,168,58,.3); flex-shrink:0;">
+            {% if job.contractor.profile_image %}
+              <img src="{{ job.contractor.profile_image.url }}" style="width:100%; height:100%; object-fit:cover;">
+            {% else %}
+              👷
+            {% endif %}
+          </div>
+          <div style="display:flex; flex-direction:column;">
+            <span style="font-size:11px; color:var(--t3); text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">Posted By</span>
+            <span style="font-size:13.5px; color:var(--t1); font-weight:600;">{{ job.contractor.name }}</span>
+          </div>
+          <a href="/profile/{{ job.contractor.id }}/" class="btn btn-ghost btn-sm"
+            style="margin-left:auto; padding:4px 12px; font-size:11px; border-radius:8px;">View Profile</a>
+        </div>
+      </div>
+
+      <div class="job-actions">
+        {% if user.role == "worker" %}
+        {% if job.application_set.count < job.max_workers %} <a href="/apply/{{ job.id }}/"
+          class="btn btn-primary btn-sm">{{ T.apply_btn }}</a>
+          {% endif %}
+          <a href="/chat/{{ job.contractor.id }}/" class="btn btn-ghost btn-sm">💬 {{ T.chat_btn }}</a>
+          {% endif %}
+          {% if user.role == "contractor" %}
+          <a href="/applicants/{{ job.id }}/" class="btn btn-ghost btn-sm">👥 {{ T.applicants_btn }}</a>
+          {% endif %}
+      </div>
+
+    </div>
+    {% empty %}
+    <div class="empty">
+      <div class="empty-icon">💼</div>
+      <p>{{ T.no_jobs }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+  const filterLocation = document.getElementById('filter-location');
+  const filterTitle = document.getElementById('filter-title');
+  const filterUrgent = document.getElementById('filter-urgent');
+  const sortSalary = document.getElementById('sort-salary');
+  const jobList = document.getElementById('job-list');
+  const jobCards = Array.from(document.querySelectorAll('.job-card'));
+
+  function applyFiltersAndSort() {
+    const loc = filterLocation.value.toLowerCase();
+    const title = filterTitle.value.toLowerCase();
+    const urgent = filterUrgent.checked;
+    const sort = sortSalary.value;
+
+    let visibleCards = [];
+
+    jobCards.forEach(card => {
+      const cardTitle = card.querySelector('.job-title').innerText.toLowerCase();
+      const cardMeta = card.querySelector('.job-meta').innerText.toLowerCase();
+      const isUrgent = card.classList.contains('urgent');
+
+      let show = true;
+      if (loc && !cardMeta.includes(loc)) show = false;
+      if (title && !cardTitle.includes(title)) show = false;
+      if (urgent && !isUrgent) show = false;
+
+      if (show) {
+        card.style.display = 'flex';
+        visibleCards.push(card);
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    if (sort === 'high') {
+      visibleCards.sort((a, b) => parseInt(b.getAttribute('data-salary')) - parseInt(a.getAttribute('data-salary')));
+    } else if (sort === 'low') {
+      visibleCards.sort((a, b) => parseInt(a.getAttribute('data-salary')) - parseInt(b.getAttribute('data-salary')));
+    }
+
+    // Reappend sorted cards
+    visibleCards.forEach(card => jobList.appendChild(card));
+  }
+
+  filterLocation.addEventListener('change', applyFiltersAndSort);
+  filterTitle.addEventListener('change', applyFiltersAndSort);
+  filterUrgent.addEventListener('change', applyFiltersAndSort);
+  sortSalary.addEventListener('change', applyFiltersAndSort);
+</script>
+
+{% endblock %}

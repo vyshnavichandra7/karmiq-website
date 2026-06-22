@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="main main-wide">
+  
+  <!-- Page Header -->
+  <div class="ph" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:32px;">
+    <div>
+      <div style="font-size:12px; font-weight:800; color:var(--amber); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:4px;">Contractor Center</div>
+      <h1 style="margin:0;">{{ T.dashboard_title }}</h1>
+      <p style="color:var(--t2); font-size:14px; margin-top:4px;">Overview of your activity</p>
+    </div>
+    <div style="display:flex; gap:12px;">
+      <a href="/profile/{{ user.id }}/" class="btn btn-ghost" style="border-radius:12px; padding:10px 20px;">
+        🏗️ Public Profile
+      </a>
+      <a href="/post-job/" class="btn btn-primary" style="border-radius:12px; padding:10px 20px;">
+        ➕ Post New Job
+      </a>
+    </div>
+  </div>
+
+  <!-- STAT CARDS (Side by Side) -->
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 48px;">
+    <div class="stat" style="padding:32px 24px; text-align:center;">
+      <div class="stat-num" style="font-size:48px; line-height:1; margin-bottom:8px;">{{ total_jobs }}</div>
+      <div class="stat-lbl" style="font-size:12px; font-weight:700; text-transform:uppercase;">Total Jobs</div>
+    </div>
+    <div class="stat" style="padding:32px 24px; text-align:center;">
+      <div class="stat-num" style="font-size:48px; line-height:1; margin-bottom:8px;">{{ total_applications }}</div>
+      <div class="stat-lbl" style="font-size:12px; font-weight:700; text-transform:uppercase;">Applications</div>
+    </div>
+    <div class="stat" style="padding:32px 24px; text-align:center; border-color:var(--amber-glo); background:var(--amber-glo);">
+      <div class="stat-num" style="font-size:48px; line-height:1; margin-bottom:8px; color:var(--amber);">{{ total_hired }}</div>
+      <div class="stat-lbl" style="font-size:12px; font-weight:700; color:var(--amber); text-transform:uppercase;">Workers Hired</div>
+    </div>
+  </div>
+
+  <!-- Main Content Area (Full Width) -->
+  <div class="ph" style="margin-bottom:20px; display:flex; align-items:center; gap:12px;">
+    <div style="width:40px; height:2px; background:var(--amber);"></div>
+    <h1 style="font-size:22px; margin:0;">Active Postings</h1>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:16px">
+    {% for job in jobs %}
+      <div class="job-card" style="{% if job.is_completed %}opacity:0.6; filter:grayscale(0.5);{% endif %}">
+        <div class="job-head">
+          <div style="flex:1;">
+            <div class="job-title" style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:24px;">
+                {% if job.title == "Mason" %}🧱{% elif job.title == "Carpenter" %}🪚{% elif job.title == "Plumber" %}🚰{% elif job.title == "Electrician" %}⚡{% elif job.title == "Painter" %}🖌️{% else %}👷{% endif %}
+              </span>
+              {{ job.title }}
+              {% if job.is_completed %}
+                <span class="badge badge-hired">✅ Completed</span>
+              {% elif job.is_urgent %}
+                <span class="badge badge-urgent">🔥 Urgent</span>
+              {% endif %}
+            </div>
+            <div style="font-size:13px; color:var(--t2); margin-top:6px; display:flex; flex-wrap:wrap; gap:14px;">
+              <span>📍 {{ job.location }}</span>
+              <span style="color:var(--amber); font-weight:700;">💰 ₹{{ job.salary }}</span>
+              <span>👷 {{ job.application_set.count }}/{{ job.max_workers }} Applicants</span>
+            </div>
+          </div>
+          
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <a href="/applicants/{{ job.id }}/" class="btn btn-ghost btn-sm" style="padding:8px 16px;">👥 Applicants</a>
+            {% if not job.is_completed %}
+              <a href="/edit-job/{{ job.id }}/" class="btn btn-ghost btn-sm" style="background:var(--amber-glo); border-color:var(--amber);">✏️ Edit</a>
+              <a href="/complete-job/{{ job.id }}/" class="btn btn-primary btn-sm" onclick="return confirm('Mark as completed?');">✅ Finish</a>
+            {% endif %}
+            <a href="/delete-job/{{ job.id }}/" class="btn btn-sm" style="background:var(--red); color:white;" onclick="return confirm('Delete this job?');">🗑️</a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="empty">
+        <div class="empty-icon">📋</div>
+        <p>No active job postings found.</p>
+        <a href="/post-job/" class="btn btn-primary" style="margin-top:12px">➕ Post Your First Job</a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
